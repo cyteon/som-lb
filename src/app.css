@@ -1,1 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=National+Park:wght@200..800&display=swap');
 @import 'tailwindcss';
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url("/background.svg");
+    background-size: cover;
+    background-position: right bottom;
+    z-index: -1;
+}
+
+* {
+    font-family: "National Park", sans-serif;
+    font-weight: 700;
+}
+
+h1 {
+    font-family: "DynaPuff", cursive;
+    font-weight: bolder;
+}
+
+a {
+    @apply text-blue-600;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+.brown {
+    color: #4a2d24;
+}
+
+.border {
+    border: 1px solid rgba(124, 74, 51, 0.5);
+}
+
+.bg {
+    background: radial-gradient(circle at 35.5531% 37.4291%, rgb(246, 219, 186), rgb(230, 212, 190));
+}
