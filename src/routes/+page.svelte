@@ -103,7 +103,7 @@
         {/each}
     </div>
 
-    <div class="flex mt-4 mb-16 bg border rounded-md px-4">
+    <div class="flex mt-4 mb-16 bg border rounded-md px-2">
         <button 
             class="text-lg my-auto mr-4 disabled:opacity-80 bg-blue-400 px-2 rounded-md"
             on:click={() => {
