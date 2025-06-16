@@ -11,6 +11,9 @@
 
     let page: number = 1;
 
+    let hadSearchParam: boolean = false;
+    let search: string = "";
+
     onMount(async () => {
         if (browser) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -22,9 +25,21 @@
                     page = parsedPage;
                 }
             }
+
+            search = urlParams.get("search") || "";
+
+            if (search.trim()) {
+                hadSearchParam = true;
+            }
         }
 
-        const response = await fetch(`/api/lb?page=${page}`);
+        let url = `/api/lb?page=${page}`;
+
+        if (search.trim()) {
+            url = `/api/search?search=${encodeURIComponent(search)}&page=${page}`;
+        }
+
+        const response = await fetch(url);
 
         if (response.ok) {
             let data = await response.json();
@@ -40,15 +55,37 @@
 <div class="flex flex-col items-center h-full px-2">
     <h1 class="text-4xl md:text-6xl mt-16 brown">Shell Leaderboard</h1>
     <div class="flex md:text-lg">
-        <a href="https://github.com/cyteon/som-lb" class="opacity-70">Source</a>
+        <a href="https://github.com/cyteon/som-lb" class="opacity-70 font-bold!">Source</a>
         <p class="brown opacity-40 mx-1">|</p>
-        <a href="https://summer.hackclub.com" class="opacity-70">Summer of Making</a>
+        <a href="https://summer.hackclub.com" class="opacity-70 font-bold!">Summer of Making</a>
         <p class="brown opacity-40 mx-1">|</p>
-        <p class="opacity-70">By <a href="https://cyteon.dev?utm_source=som-lb">Cyteon</a></p>
+        <p class="opacity-70 font-bold!">By <a href="https://cyteon.dev?utm_source=som-lb" class="font-bold!">Cyteon</a></p>
+    </div>
+
+    <div class="mt-8 bg border rounded-md p-2 flex">
+        <input 
+            type="text" 
+            placeholder="Search for a user..." 
+            class="px-2 py-1 border rounded-md w-full focus:outline-none"
+            bind:value={search}
+        />
+
+        <button 
+            class="bg-blue-400 px-4 py-1 rounded-md ml-2 disabled:opacity-80"
+            on:click={() => {
+                if (browser) {
+                    window.location.search = `?page=1&search=${encodeURIComponent(search)}`;
+                }
+            }}
+            
+            disabled={!(search.trim() || hadSearchParam)}
+        >
+            Search
+        </button>
     </div>
 
     <div
-        class="w-full md:w-1/2 mt-8 space-y-2" 
+        class="w-full md:w-1/2 mt-4 space-y-2" 
     >
         {#each users as user, index}
             <div 
@@ -72,7 +109,7 @@
             on:click={() => {
                 if (page > 1) {
                     page--;
-                    window.location.search = `?page=${page}`;
+                    window.location.search = `?page=${page}&search=${encodeURIComponent(search)}`;
                 }
             }}
             disabled={page <= 1}
@@ -85,7 +122,7 @@
             on:click={() => {
                 if (page < pages) {
                     page++;
-                    window.location.search = `?page=${page}`;
+                    window.location.search = `?page=${page}&search=${encodeURIComponent(search)}`;
                 }
             }}
             disabled={page >= pages}
