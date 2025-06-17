@@ -91,7 +91,11 @@
             <div 
                 class="flex p-2 px-4 border rounded-md bg"
             >
-                <p class="text-2xl my-auto mr-4">#{index + 1 + (page - 1) * 10}</p>
+                <p class="text-2xl my-auto mr-4">#{
+                    search.trim() || hadSearchParam ? 
+                        user.rank : 
+                        index + 1 + (page - 1) * 10   
+                }</p>
                 <img src={user.avatar} alt={user.username} class="w-16 h-16 rounded-md" />
                 <h2 class="text-2xl my-auto ml-4 truncate max-w-1/4">{user.username}</h2>
 
