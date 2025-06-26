@@ -2,11 +2,20 @@
     import { browser } from '$app/environment';
     import { onMount } from 'svelte';
 
-    let users: {
-        avatar: string;
-        username: string;
-        shells: number;
-    }[] = [];
+    let data: {
+        users: {
+            id: string;
+            avatar: string;
+            username: string;
+            shells: string;
+            rank?: number;
+        }[];
+        pages?: number;
+        timestamp?: number;
+        optedIn?: number;
+    } = {
+        users: [],
+    };
     let pages: number = 1;
 
     let page: number = 1;
@@ -42,17 +51,14 @@
         const response = await fetch(url);
 
         if (response.ok) {
-            let data = await response.json();
-
-            users = data.users;
-            pages = data.pages;
+            data = await response.json();
         } else {
             console.error("Failed to fetch leaderboard data");
         }
     });
 </script>
 
-<div class="flex flex-col items-center h-full px-2">
+<div class="flex flex-col items-center h-full px-2 ">
     <h1 class="text-4xl md:text-6xl mt-16 brown">Shell Leaderboard</h1>
     <div class="flex md:text-lg">
         <a href="https://github.com/cyteon/som-lb" class="opacity-70 font-bold!">Source</a>
@@ -61,6 +67,15 @@
         <p class="brown opacity-40 mx-1">|</p>
         <p class="opacity-70 font-bold!">By <a href="https://cyteon.dev?utm_source=som-lb" class="font-bold!">Cyteon</a></p>
     </div>
+    <div class="flex">
+        <p class="opacity-70">
+            Opt in with 
+            <code class="border rounded-sm py-0.5 px-1 bg text-sm">/command-here</code>
+        </p>
+        <p class="brown opacity-40 mx-1">|</p>
+        <p class="opacity-70"><span class="font-bold!">{data.optedIn || 0}</span> opted-in</p>
+    </div>
+
 
     <div class="mt-8 bg border rounded-md p-2 flex">
         <input 
@@ -87,7 +102,7 @@
     <div
         class="w-full md:w-1/2 mt-4 space-y-2" 
     >
-        {#each users as user, index}
+        {#each data.users as user, index}
             <div 
                 class="flex p-2 px-4 border rounded-md bg"
             >
