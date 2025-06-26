@@ -8,15 +8,16 @@ export default async function fetchData() {
     try {
         cache = JSON.parse(fs.readFileSync("cache.json", "utf-8"));
     } catch (e) {
-        console.error("Cache file not found or invalid, creating a new one.");
         cache = { users: [], timestamp: 0 };
     }
  
     // 5 min cache
     if (cache.timestamp > Date.now() - 1000 * 60 * 5) {
-        console.log("Cache hit");
+        console.log("cache hit");
         return cache;
     }
+
+    console.log("cache miss");
 
     let data = {
         users: [
