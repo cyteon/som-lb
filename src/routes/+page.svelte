@@ -248,7 +248,7 @@
                                     {#if payout.payable_type === "User"}
                                         User Modified
                                     {:else if payout.payable_type === "ShopOrder"}
-                                        {#if parseFloat(payout.amount) > 0}
+                                        {#if parseFloat(payout.amount) < 0}
                                             Shop Order
                                         {:else}
                                             Shop Refund
