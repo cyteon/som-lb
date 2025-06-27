@@ -1,51 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=National+Park:wght@200..800&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=National+Park:wght@200..800&display=swap");
+@import "tailwindcss";
 
 body::before {
-    content: "";
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: url("/background.svg");
-    background-size: cover;
-    background-position: right bottom;
-    z-index: -1;
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url("/background.svg");
+  background-size: cover;
+  background-position: right bottom;
+  z-index: -1;
 }
 
 * {
-    font-family: "National Park", sans-serif;
-    font-weight: 600;
+  font-family: "National Park", sans-serif;
+  font-weight: 600;
 }
 
 h1 {
-    font-family: "DynaPuff", cursive;
-    font-weight: bolder;
+  font-family: "DynaPuff", cursive;
+  font-weight: bolder;
 }
 
 a {
-    @apply text-blue-600;
+  @apply text-blue-600;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 button {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 button:disabled {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 .brown {
-    color: #4a2d24;
+  color: #4a2d24;
 }
 
-.border, .border-b, .border-t, .border-l, .border-r {
-    border-color: rgba(124, 74, 51, 0.5);
+.border,
+.border-b,
+.border-t,
+.border-l,
+.border-r {
+  border-color: rgba(124, 74, 51, 0.5);
 }
 
 .bg {
-    background: radial-gradient(circle at 35.5531% 37.4291%, rgb(246, 219, 186), rgb(230, 212, 190));
+  background: radial-gradient(
+    circle at 35.5531% 37.4291%,
+    rgb(246, 219, 186),
+    rgb(230, 212, 190)
+  );
 }
