@@ -38,8 +38,6 @@ export default async function fetchData() {
 
   data.users = await Promise.all(
     data.users.map(async (user) => {
-      console.log(`Fetching data for user ${user.slack_id}`);
-
       const userData = await fetchUserData(user.slack_id);
 
       return {
@@ -56,8 +54,6 @@ export default async function fetchData() {
 }
 
 async function fetchUserData(slackId) {
-  console.log(`Fetching user data for ${slackId}`);
-
   let cache;
 
   try {
@@ -69,21 +65,30 @@ async function fetchUserData(slackId) {
   // 6hr cache
   if (cache.timestamp > Date.now() - 1000 * 60 * 60 * 6) {
     const user = cache.users[slackId];
+
     if (user) {
+      console.log(`Cache hit for user ${slackId}`);
       return user;
     }
   }
 
+  console.log(`Fetching data for user ${slackId}`);
+
+
   const res = await fetch(`https://cachet.dunkirk.sh/users/${slackId}`);
 
-  if (!res.ok) {
+  if (!res.ok && res.status !== 422) {
     return {
       username: slackId,
       avatar: `https://cachet.dunkirk.sh/users/${slackId}/r`,
     };
   }
 
-  const userData = await res.json();
+  let userData = await res.json();
+
+  if (res.status === 422) {
+    userData = userData.found;
+  }
 
   fs.writeFileSync(
     "userCache.json",
