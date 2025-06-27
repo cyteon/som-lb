@@ -1,6 +1,7 @@
 <script lang="ts">
     import { browser } from '$app/environment';
     import { onMount } from 'svelte';
+    import { parse } from 'svelte/compiler';
 
     let data: {
         users: {
@@ -247,7 +248,11 @@
                                     {#if payout.payable_type === "User"}
                                         User Modified
                                     {:else if payout.payable_type === "ShopOrder"}
-                                        Shop Order
+                                        {#if parseFloat(payout.amount) > 0}
+                                            Shop Order
+                                        {:else}
+                                            Shop Refund
+                                        {/if}
                                     {:else}
                                         {payout.payable_type}
                                     {/if}
