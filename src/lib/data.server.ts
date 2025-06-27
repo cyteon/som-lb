@@ -43,7 +43,7 @@ export default async function fetchData() {
       return {
         ...user,
         username: userData.username || user.slack_id,
-        avatar: userData.image,
+        image: userData.image,
       };
     }),
   );
@@ -80,7 +80,7 @@ async function fetchUserData(slackId) {
   if (!res.ok && res.status !== 422) {
     return {
       username: slackId,
-      avatar: `https://cachet.dunkirk.sh/users/${slackId}/r`,
+      image: `https://cachet.dunkirk.sh/users/${slackId}/r`,
     };
   }
 
@@ -97,8 +97,8 @@ async function fetchUserData(slackId) {
         users: {
           ...cache.users,
           [slackId]: {
-            username: userData.displayName || slackId,
-            image: userData.image,
+            displayName: userData.displayName || slackId,
+            image: userData.image || `https://cachet.dunkirk.sh/users/${slackId}/r`,
           },
         },
         timestamp: Date.now(),
@@ -110,6 +110,6 @@ async function fetchUserData(slackId) {
 
   return {
     username: userData.displayName || slackId,
-    avatar: userData.image,
+    image: userData.image,
   };
 }

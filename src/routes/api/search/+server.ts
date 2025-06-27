@@ -35,11 +35,8 @@ export async function GET({ url }) {
   searchData = searchData.slice((page - 1) * 10, page * 10);
 
   searchData = searchData.map((user) => ({
-    id: user.id,
-    avatar: user.avatar,
-    username: user.username,
-    shells: user.shells,
-    rank: users.findIndex((u) => u.id === user.id) + 1,
+    ...user,
+    rank: users.findIndex((u) => u.slack_id === user.slack_id) + 1,
   }));
 
   return Response.json({

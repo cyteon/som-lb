@@ -67,7 +67,7 @@
 
         const response = await fetch(url);
 
-        if (response.ok) {
+        if (response.ok || (response.status === 404 && search.trim())) {
             data = await response.json();
             loading = false;
         } else {
@@ -169,24 +169,28 @@
         <div
             class="w-full md:w-1/2 mt-4 space-y-2" 
         >
-            {#each data.users as user, index}
-                <div 
-                    class="flex p-2 px-4 border rounded-md bg"
-                >
-                    <p class="text-2xl my-auto mr-4">#{
-                        search.trim() || hadSearchParam ? 
-                            user.rank : 
-                            index + 1 + (page - 1) * 10   
-                    }</p>
-                    <img src={`https://cachet.dunkirk.sh/users/${user.slack_id}/r`} alt={user.username} class="my-auto size-12 md:size-16 rounded-md" />
-                    <button class="text-2xl my-auto ml-4 truncate max-w-2/5 hover:underline" on:click={() => { popupData = user }}>{user.username}</button>
+            {#if data.users?.length > 0}
+                {#each data.users as user, index}
+                    <div 
+                        class="flex p-2 px-4 border rounded-md bg"
+                    >
+                        <p class="text-2xl my-auto mr-4">#{
+                            hadSearchParam ? 
+                                user.rank : 
+                                index + 1 + (page - 1) * 10   
+                        }</p>
+                        <img src={user.image} alt={user.username} class="my-auto size-12 md:size-16 rounded-md" />
+                        <button class="text-2xl my-auto ml-4 truncate max-w-2/5 hover:underline" on:click={() => { popupData = user }}>{user.username}</button>
 
-                    <div class="ml-auto my-auto flex">
-                        <p class="text-2xl text-right">{user.shells.toFixed(0)}</p>
-                        <img src="/shell.png" alt="shell" class="inline my-1.5 w-6 h-6 ml-2" />
+                        <div class="ml-auto my-auto flex">
+                            <p class="text-2xl text-right">{user.shells.toFixed(0)}</p>
+                            <img src="/shell.png" alt="shell" class="inline my-1.5 w-6 h-6 ml-2" />
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
+            {:else}
+                <p class="text-lg text-center my-4">No users found.</p>
+            {/if}
         </div>
 
         <div class="flex mt-4 mb-16 bg border rounded-md px-2">
@@ -202,7 +206,7 @@
             >
                 &lt; Back
             </button>
-            <p class="text-xl my-2">{page} / {data.pages}</p>
+            <p class="text-xl my-2">{page} / {data.pages || 1}</p>
             <button 
                 class="text-lg my-auto ml-4 disabled:opacity-80 bg-blue-400 px-2 rounded-md" 
                 on:click={() => {
