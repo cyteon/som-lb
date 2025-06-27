@@ -5,6 +5,7 @@
     let data: {
         users: {
             slack_id: string;
+            username: string;
             payouts: {
                 amount: string;
                 created_at: string;
@@ -13,13 +14,12 @@
             }[];
             shells: number;
         }[];
-        pages: number;
-        timestamp: number;
-        optedIn: number;
+        pages?: number;
+        timestamp?: number;
+        optedIn?: number;
     } = {
         users: [],
     };
-    let pages: number = 1;
 
     let page: number = 1;
 
@@ -201,16 +201,16 @@
             >
                 &lt; Back
             </button>
-            <p class="text-xl my-2">{page} / {pages}</p>
+            <p class="text-xl my-2">{page} / {data.pages}</p>
             <button 
                 class="text-lg my-auto ml-4 disabled:opacity-80 bg-blue-400 px-2 rounded-md" 
                 on:click={() => {
-                    if (page < pages) {
+                    if (page < data.pages) {
                         page++;
                         window.location.search = `?page=${page}&search=${encodeURIComponent(search)}`;
                     }
                 }}
-                disabled={page >= pages}
+                disabled={page >= data.pages}
             >
                 Next &gt;
             </button>
