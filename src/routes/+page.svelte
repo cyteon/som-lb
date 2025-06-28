@@ -169,7 +169,7 @@
                 class="bg-blue-400 px-4 py-1 rounded-md ml-2 disabled:opacity-80"
                 on:click={async () => {
                     if (browser) {
-                        fetchData();
+                        await fetchData();
 
                         window.history.pushState({}, '', `?page=1&search=${encodeURIComponent(search)}`);
                     }
