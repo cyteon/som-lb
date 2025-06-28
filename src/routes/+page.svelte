@@ -214,6 +214,8 @@
                                 }
                             });
 
+                            chartData.sort((a, b) => a.time - b.time);
+
                             const chartOptions: DeepPartial<TimeChartOptions> = { 
                                 layout: { 
                                     textColor: "black", 
