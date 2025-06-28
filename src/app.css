@@ -22,6 +22,10 @@ h1 {
   font-weight: bolder;
 }
 
+.dynapuff {
+  font-family: "DynaPuff", cursive;
+}
+
 a {
   @apply text-blue-600;
 }

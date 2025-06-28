@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { browser } from '$app/environment';
-    import { onMount } from 'svelte';
-    import { parse } from 'svelte/compiler';
+    import { browser } from "$app/environment";
+    import { AreaSeries, createChart, type DeepPartial, type TimeChartOptions } from "lightweight-charts";
+    import { onMount, tick } from "svelte";
+    import { parse } from "svelte/compiler";
 
     let data: {
         users: {
@@ -44,7 +45,7 @@
         if (browser) {
             const urlParams = new URLSearchParams(window.location.search);
 
-            const pageParam = urlParams.get('page');
+            const pageParam = urlParams.get("page");
             if (pageParam) {
                 const parsedPage = parseInt(pageParam);
                 if (!isNaN(parsedPage) && parsedPage > 0) {
@@ -121,7 +122,7 @@
         <p class="text-2xl text-white mt-4">Loading...</p>
     </div>
 {:else}
-    <div class="flex flex-col items-center h-full px-2 ">
+    <div class="flex flex-col items-center px-2">
         <h1 class="text-4xl md:text-6xl mt-16 brown">Shell Leaderboard</h1>
         <div class="flex flex-col md:flex-row items-center">
             <p class="opacity-70">
@@ -173,7 +174,7 @@
                     if (browser) {
                         await fetchData();
 
-                        window.history.pushState({}, '', `?page=1&search=${encodeURIComponent(search)}`);
+                        window.history.pushState({}, "", `?page=1&search=${encodeURIComponent(search)}`);
                     }
                 }}
                 
@@ -197,7 +198,53 @@
                                 index + 1 + (page - 1) * 10   
                         }</p>
                         <img src={user.image} alt={user.username} class="my-auto size-12 md:size-16 rounded-md" />
-                        <button class="text-2xl my-auto ml-4 truncate max-w-2/5 hover:underline" on:click={() => { popupData = user }}>{user.username}</button>
+                        <button class="text-2xl my-auto ml-4 truncate max-w-2/5 hover:underline" on:click={async () => { 
+                            popupData = user;
+
+                            let currentShells = 0;
+
+                            await tick();
+
+                            let chartData = user.payouts.map((p) => {
+                                currentShells += parseFloat(p.amount);
+
+                                return {
+                                    value: currentShells,
+                                    time: new Date(p.created_at).getTime() / 1000,
+                                }
+                            });
+
+                            const chartOptions: DeepPartial<TimeChartOptions> = { 
+                                layout: { 
+                                    textColor: "black", 
+                                    background: { 
+                                        color: "transparent" 
+                                    },
+                                    attributionLogo: false,
+                                },
+                                grid: {
+                                    horzLines: {
+                                        color: "#7c4a3320"
+                                    },
+                                    vertLines: {
+                                        color: "#7c4a3320",
+                                    }
+                                },
+                                timeScale: {
+                                    timeVisible: true,
+                                    borderColor: "#7c4a33",
+                                },
+                                rightPriceScale: {
+                                    borderColor: "#7c4a33",
+                                },
+                            };
+
+                            const chart = createChart(document.getElementById("chart")!, chartOptions);
+                            const areaSeries = chart.addSeries(AreaSeries, { lineColor: "#2962FF", topColor: "#2962FF", bottomColor: "rgba(41, 98, 255, 0.28)" });
+                        
+                            areaSeries.setData(chartData);
+                            chart.timeScale().fitContent();
+                        }}>{user.username}</button>
 
                         <div class="ml-auto my-auto flex">
                             <p class="text-2xl text-right">{user.shells.toFixed(0)}</p>
@@ -218,7 +265,7 @@
                         page--;
 
                         await fetchData();
-                        window.history.pushState({}, '', `?page=${page}&search=${encodeURIComponent(search)}`);
+                        window.history.pushState({}, "", `?page=${page}&search=${encodeURIComponent(search)}`);
                     }
                 }}
                 disabled={page <= 1}
@@ -233,7 +280,7 @@
                         page++;
                         
                         await fetchData();
-                        window.history.pushState({}, '', `?page=${page}&search=${encodeURIComponent(search)}`);
+                        window.history.pushState({}, "", `?page=${page}&search=${encodeURIComponent(search)}`);
                     }
                 }}
                 disabled={page >= data.pages!}
@@ -247,14 +294,14 @@
 {#if popupData}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-2">
         <div class="flex flex-col p-2 px-4 border rounded-md bg w-full md:w-1/2">
-            <h1 class="text-3xl flex">
-                Data for {popupData.username} <button class="ml-auto text-3xl" on:click={() => { popupData = null }}>&times;</button>
+            <h1 class="text-3xl flex font-normal!">
+                Data for <span class="ml-2 font-bold! dynapuff">{popupData.username}</span> <button class="ml-auto text-3xl" on:click={() => { popupData = null }}>&times;</button>
             </h1>
             <p class="text-lg">Shells: {popupData.shells.toFixed(0)}</p>
 
             <h2 class="text-2xl mt-4">Transactions:</h2>
 
-            <div class="border rounded-sm my-2 max-h-96 overflow-y-auto">
+            <div class="border rounded-sm mt-2 max-h-96 overflow-y-auto">
                 <table class="w-full">
                     <thead>
                         <tr>
@@ -287,6 +334,10 @@
                         {/each}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="w-full h-64 mt-4 mb-2 border px-2 pt-2 rounded-sm">
+                <div id="chart" class="w-full h-full"></div>
             </div>
         </div>
     </div>
