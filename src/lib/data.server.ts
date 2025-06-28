@@ -1,5 +1,7 @@
 import fs from "fs";
 
+let userCache;
+
 export default async function fetchData() {
   // TODO: Fetch data from API
 
@@ -15,6 +17,18 @@ export default async function fetchData() {
   if (cache.timestamp > Date.now() - 1000 * 60 * 5) {
     console.log("cache hit");
     return cache;
+  }
+
+  try {
+    userCache = JSON.parse(fs.readFileSync("userCache.json", "utf-8"));
+  } catch (e) {
+    userCache = { users: {}, timestamp: 0 };
+  }
+
+  // 6hr cache
+  if (userCache.timestamp < Date.now() - 1000 * 60 * 60 * 6) {
+    console.log("user cache expired");
+    userCache = { users: {}, timestamp: 0 };
   }
 
   console.log("cache miss");
@@ -49,35 +63,28 @@ export default async function fetchData() {
   );
 
   fs.writeFileSync("cache.json", JSON.stringify(data, null, 2));
+  
+  userCache.timestamp = Date.now();
+  fs.writeFileSync("userCache.json", JSON.stringify(userCache, null, 2));
 
   return data;
 }
 
 async function fetchUserData(slackId) {
-  let cache;
+  const cachedUser = userCache.users[slackId];
 
-  try {
-    cache = JSON.parse(fs.readFileSync("userCache.json", "utf-8"));
-  } catch (e) {
-    cache = { users: {}, timestamp: 0 };
-  }
-
-  // 6hr cache
-  if (cache.timestamp > Date.now() - 1000 * 60 * 60 * 6) {
-    const user = cache.users[slackId];
-
-    if (user) {
-      console.log(`Cache hit for user ${slackId}`);
-      return user;
-    }
+  if (cachedUser) {
+    console.log(`cache hit for user ${slackId}`);
+    return cachedUser;
   }
 
   console.log(`Fetching data for user ${slackId}`);
 
-
   const res = await fetch(`https://cachet.dunkirk.sh/users/${slackId}`);
 
   if (!res.ok && res.status !== 422) {
+    console.error(`Failed to fetch user data for ${slackId}: ${res.statusText}`);
+
     return {
       username: slackId,
       image: `https://cachet.dunkirk.sh/users/${slackId}/r`,
@@ -90,23 +97,10 @@ async function fetchUserData(slackId) {
     userData = userData.found;
   }
 
-  fs.writeFileSync(
-    "userCache.json",
-    JSON.stringify(
-      {
-        users: {
-          ...cache.users,
-          [slackId]: {
-            displayName: userData.displayName || slackId,
-            image: userData.image || `https://cachet.dunkirk.sh/users/${slackId}/r`,
-          },
-        },
-        timestamp: Date.now(),
-      },
-      null,
-      2,
-    ),
-  );
+  userCache.users[slackId] = {
+    username: userData.displayName || slackId,
+    image: userData.image,
+  };
 
   return {
     username: userData.displayName || slackId,
