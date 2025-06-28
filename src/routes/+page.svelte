@@ -252,9 +252,9 @@
 
             <h2 class="text-2xl mt-4">Transactions:</h2>
 
-            <div class="border rounded-sm my-2">
+            <div class="border rounded-sm my-2 max-h-96 overflow-y-auto">
                 <table class="w-full">
-                    <thead class="border-b">
+                    <thead>
                         <tr>
                             <th class="text-left py-1 px-2 border-r">Amount</th>
                             <th class="text-left py-1 px-2 border-r">Type</th>
@@ -264,7 +264,7 @@
                     <tbody class="md:text-lg">
                         {#each popupData.payouts as payout}
                             <tr>
-                                <td class={"px-2 border border-b-0 border-l-0 " + (parseFloat(payout.amount) > 0 ? "text-green-700" : "text-red-700")}>
+                                <td class={"px-2 border-r border-t " + (parseFloat(payout.amount) > 0 ? "text-green-700" : "text-red-700")}>
                                     {parseFloat(payout.amount) > 0 ? "+" : ""}{payout.amount}
                                 </td>
                                 <td class="border border-b-0 px-2">
