@@ -33,9 +33,24 @@ export default async function fetchData() {
 
   console.log("cache miss");
 
-  const res = await fetch("https://explorpheus.hackclub.com/leaderboard");
+  let users;
 
-  if (!res.ok) {
+  try {
+    const res = await fetch("https://explorpheus.hackclub.com/leaderboard");
+
+    if (!res.ok) {
+      if (cache.users.length > 0) {
+        console.error("Using cached data due to API failure");
+        return cache;
+      }
+
+      throw new Error("Failed to fetch data from API, and cache is empty");
+    }
+
+    users = await res.json();
+  } catch (error) {
+    console.error("Error fetching data:", error);
+
     if (cache.users.length > 0) {
       console.error("Using cached data due to API failure");
       return cache;
@@ -44,7 +59,6 @@ export default async function fetchData() {
     throw new Error("Failed to fetch data from API, and cache is empty");
   }
 
-  const users = await res.json();
   const data = {
     users,
     timestamp: Date.now(),
@@ -74,11 +88,10 @@ async function fetchUserData(slackId) {
   const cachedUser = userCache.users[slackId];
 
   if (cachedUser) {
-    console.log(`cache hit for user ${slackId}`);
     return cachedUser;
   }
 
-  console.log(`Fetching data for user ${slackId}`);
+  console.log(`cache miss for user ${slackId}`);
 
   const res = await fetch(`https://cachet.dunkirk.sh/users/${slackId}`);
 
