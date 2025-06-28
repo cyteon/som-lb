@@ -1,28 +1,45 @@
 import fs from "fs";
+import { WebClient } from "@slack/web-api";
+import PQueue from "p-queue";
 
-let userCache;
+import { SLACK_TOKEN } from "$env/static/private";
+
+const slack = new WebClient(SLACK_TOKEN);
+
+// slack ratelimit of around 100/min
+const userInfoQueue = new PQueue({
+  intervalCap: 100,
+  interval: 60_000,
+  carryoverConcurrencyCount: true,
+});
+
+let userCache: {
+  users: Record<string, { username: string; image: string }>;
+  timestamp: number;
+};
+
+let cache: {
+  users: any[];
+  timestamp: number;
+};
+
+try {
+  cache = JSON.parse(fs.readFileSync("cache.json", "utf-8"));
+} catch (e) {
+  cache = { users: [], timestamp: 0 };
+}
+
+try {
+  userCache = JSON.parse(fs.readFileSync("userCache.json", "utf-8"));
+} catch (e) {
+  userCache = { users: {}, timestamp: 0 };
+}
 
 export default async function fetchData() {
-  // TODO: Fetch data from API
-
-  let cache;
-
-  try {
-    cache = JSON.parse(fs.readFileSync("cache.json", "utf-8"));
-  } catch (e) {
-    cache = { users: [], timestamp: 0 };
-  }
-
   // 5 min cache
   if (cache.timestamp > Date.now() - 1000 * 60 * 5) {
     console.log("cache hit");
     return cache;
-  }
-
-  try {
-    userCache = JSON.parse(fs.readFileSync("userCache.json", "utf-8"));
-  } catch (e) {
-    userCache = { users: {}, timestamp: 0 };
   }
 
   // 6hr cache
@@ -59,13 +76,8 @@ export default async function fetchData() {
     throw new Error("Failed to fetch data from API, and cache is empty");
   }
 
-  const data = {
-    users,
-    timestamp: Date.now(),
-  };
-
-  data.users = await Promise.all(
-    data.users.map(async (user) => {
+  users = await Promise.all(
+    users.map(async (user) => {
       const userData = await fetchUserData(user.slack_id);
 
       return {
@@ -76,8 +88,14 @@ export default async function fetchData() {
     }),
   );
 
+  const data = {
+    users,
+    timestamp: Date.now(),
+  };
+
+  cache = data;
   fs.writeFileSync("cache.json", JSON.stringify(data, null, 2));
-  
+
   userCache.timestamp = Date.now();
   fs.writeFileSync("userCache.json", JSON.stringify(userCache, null, 2));
 
@@ -93,30 +111,18 @@ async function fetchUserData(slackId) {
 
   console.log(`cache miss for user ${slackId}`);
 
-  const res = await fetch(`https://cachet.dunkirk.sh/users/${slackId}`);
+  const res = await userInfoQueue.add(() =>
+    slack.users.info({ user: slackId }),
+  );
 
-  if (!res.ok && res.status !== 422) {
-    console.error(`Failed to fetch user data for ${slackId}: ${res.statusText}`);
-
-    return {
-      username: slackId,
-      image: `https://cachet.dunkirk.sh/users/${slackId}/r`,
-    };
-  }
-
-  let userData = await res.json();
-
-  if (res.status === 422) {
-    userData = userData.found;
-  }
-
-  userCache.users[slackId] = {
-    username: userData.displayName || slackId,
-    image: userData.image,
+  const data = {
+    username:
+      res.user?.profile?.display_name_normalized || res.user?.name || slackId,
+    image:
+      res.user?.profile?.image_192 ||
+      `https://cachet.dunkirk.sh/users/${slackId}/r`,
   };
 
-  return {
-    username: userData.displayName || slackId,
-    image: userData.image,
-  };
+  userCache.users[slackId] = data;
+  return data;
 }

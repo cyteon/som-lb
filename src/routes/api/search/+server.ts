@@ -23,7 +23,6 @@ export async function GET({ url }) {
 
   let pages = Math.ceil(searchData.length / 10);
 
-
   if (searchData.length === 0) {
     return Response.json(
       {
@@ -35,7 +34,6 @@ export async function GET({ url }) {
       { status: 404 },
     );
   }
-
 
   searchData = searchData.slice((page - 1) * 10, page * 10);
 
