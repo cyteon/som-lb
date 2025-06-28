@@ -21,16 +21,21 @@ export async function GET({ url }) {
     user.username.toLowerCase().includes(search.toLowerCase()),
   );
 
+  let pages = Math.ceil(searchData.length / 10);
+
+
   if (searchData.length === 0) {
     return Response.json(
       {
         error: "No users found",
+        pages,
+        timestamp: data.timestamp,
+        optedIn: data.users.length,
       },
       { status: 404 },
     );
   }
 
-  let pages = Math.ceil(searchData.length / 10);
 
   searchData = searchData.slice((page - 1) * 10, page * 10);
 

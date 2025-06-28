@@ -59,22 +59,33 @@
             }
         }
 
-        let url = `/api/lb?page=${page}`;
-
-        if (search.trim()) {
-            url = `/api/search?search=${encodeURIComponent(search)}&page=${page}`;
-        }
-
-        const response = await fetch(url);
-
-        if (response.ok || (response.status === 404 && search.trim())) {
-            data = await response.json();
-            loading = false;
-        } else {
-            console.error("Failed to fetch leaderboard data");
-            alert("Failed to fetch leaderboard data. Please try again later.");
-        }
+        await fetchData();
     });
+
+    async function fetchData() {
+        try {
+            let url = `/api/lb?page=${page}`;
+
+            if (search.trim()) {
+                url = `/api/search?search=${encodeURIComponent(search)}&page=${page}`;
+
+                hadSearchParam = true;
+            }
+
+            const response = await fetch(url);
+
+            if (response.ok || (response.status === 404 && search.trim())) {
+                data = await response.json();
+                loading = false;
+            } else {
+                console.error("Failed to fetch leaderboard data");
+                alert("Failed to fetch leaderboard data. Please try again later.");
+            }
+        } catch (error) {
+            console.error("Error fetching leaderboard data:", error);
+            alert("An error occurred while fetching leaderboard data. Please try again later.");
+        }
+    }
 
     let currentTime: number = new Date().getTime();
 
@@ -154,9 +165,11 @@
 
             <button 
                 class="bg-blue-400 px-4 py-1 rounded-md ml-2 disabled:opacity-80"
-                on:click={() => {
+                on:click={async () => {
                     if (browser) {
-                        window.location.search = `?page=1&search=${encodeURIComponent(search)}`;
+                        fetchData();
+
+                        window.history.pushState({}, '', `?page=1&search=${encodeURIComponent(search)}`);
                     }
                 }}
                 
