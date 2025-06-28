@@ -2,7 +2,6 @@
     import { browser } from "$app/environment";
     import { AreaSeries, createChart, type DeepPartial, type TimeChartOptions } from "lightweight-charts";
     import { onMount, tick } from "svelte";
-    import { parse } from "svelte/compiler";
 
     let data: {
         users: {
@@ -15,6 +14,7 @@
                 payable_type: string;
             }[];
             shells: number;
+            image: string;
         }[];
         pages?: number;
         timestamp?: number;
@@ -295,9 +295,9 @@
 
 {#if popupData}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-2">
-        <div class="flex flex-col p-2 px-4 border rounded-md bg w-full md:w-1/2">
-            <h1 class="text-3xl flex font-normal!">
-                Data for <span class="ml-2 font-bold! dynapuff">{popupData.username}</span> <button class="ml-auto text-3xl" on:click={() => { popupData = null }}>&times;</button>
+        <div class="flex flex-col p-2 px-4 border rounded-md bg w-full md:w-1/2 max-h-3/4">
+            <h1 class="text-3xl flex">
+                {popupData.username} <button class="ml-auto text-3xl" on:click={() => { popupData = null }}>&times;</button>
             </h1>
             <p class="text-lg">Shells: {popupData.shells.toFixed(0)}</p>
 
