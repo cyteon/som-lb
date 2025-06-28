@@ -70,6 +70,8 @@
                 url = `/api/search?search=${encodeURIComponent(search)}&page=${page}`;
 
                 hadSearchParam = true;
+            } else {
+                hadSearchParam = false;
             }
 
             const response = await fetch(url);
@@ -209,10 +211,12 @@
         <div class="flex mt-4 mb-16 bg border rounded-md px-2">
             <button 
                 class="text-lg my-auto mr-4 disabled:opacity-80 bg-blue-400 px-2 rounded-md"
-                on:click={() => {
+                on:click={async () => {
                     if (page > 1) {
                         page--;
-                        window.location.search = `?page=${page}&search=${encodeURIComponent(search)}`;
+
+                        await fetchData();
+                        window.history.pushState({}, '', `?page=${page}&search=${encodeURIComponent(search)}`);
                     }
                 }}
                 disabled={page <= 1}
@@ -222,13 +226,15 @@
             <p class="text-xl my-2">{page} / {data.pages || 1}</p>
             <button 
                 class="text-lg my-auto ml-4 disabled:opacity-80 bg-blue-400 px-2 rounded-md" 
-                on:click={() => {
-                    if (page < data.pages) {
+                on:click={async () => {
+                    if (page < data.pages!) {
                         page++;
-                        window.location.search = `?page=${page}&search=${encodeURIComponent(search)}`;
+                        
+                        await fetchData();
+                        window.history.pushState({}, '', `?page=${page}&search=${encodeURIComponent(search)}`);
                     }
                 }}
-                disabled={page >= data.pages}
+                disabled={page >= data.pages!}
             >
                 Next &gt;
             </button>
