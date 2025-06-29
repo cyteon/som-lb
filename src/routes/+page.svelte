@@ -205,14 +205,20 @@
 
                             await tick();
 
-                            let chartData = user.payouts.map((p) => {
-                                currentShells += parseFloat(p.amount);
+                            let chartData = [
+                                {
+                                    value: 0, // everyone started with 0 soooo
+                                    time: 1750053180 // 16th june 2025, 7:53am: SoM launch
+                                }, 
+                                ...user.payouts.map((p) => {
+                                    currentShells += parseFloat(p.amount);
 
-                                return {
-                                    value: currentShells,
-                                    time: new Date(p.created_at).getTime() / 1000,
-                                }
-                            });
+                                    return {
+                                        value: currentShells,
+                                        time: new Date(p.created_at).getTime() / 1000,
+                                    }
+                                })
+                            ]
 
                             chartData.sort((a, b) => a.time - b.time);
 
