@@ -34,7 +34,6 @@
             amount: string;
             created_at: string;
             id: string;
-            payable_type: string;
         }[];
         shells: number;
     } | null = null;
@@ -314,7 +313,6 @@
                     <thead>
                         <tr>
                             <th class="text-left py-1 px-2 border-r">Amount</th>
-                            <th class="text-left py-1 px-2 border-r">Type</th>
                             <th class="text-left py-1 px-2">Time</th>
                         </tr>
                     </thead>
@@ -323,19 +321,6 @@
                             <tr>
                                 <td class={"px-2 border-r border-t " + (parseFloat(payout.amount) > 0 ? "text-green-700" : "text-red-700")}>
                                     {parseFloat(payout.amount) > 0 ? "+" : ""}{payout.amount}
-                                </td>
-                                <td class="border border-b-0 px-2">
-                                    {#if payout.payable_type === "User"}
-                                        User Modified
-                                    {:else if payout.payable_type === "ShopOrder"}
-                                        {#if parseFloat(payout.amount) < 0}
-                                            Shop Order
-                                        {:else}
-                                            Shop Refund
-                                        {/if}
-                                    {:else}
-                                        {payout.payable_type}
-                                    {/if}
                                 </td>
                                 <td class="border border-b-0 border-r-0 px-2">{generateTimeString(new Date(payout.created_at).getTime())}</td>
                             </tr>

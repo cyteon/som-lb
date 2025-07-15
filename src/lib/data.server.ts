@@ -78,6 +78,10 @@ export default async function fetchData() {
 
   users = await Promise.all(
     users.map(async (user) => {
+      if (!user.slack_id) {
+        return { ...user, username: "<unknown>", image: "https://ca.slack-edge.com/T0266FRGM-U015ZPLDZKQ-gf3696467c28-512" };
+      }
+
       const userData = await fetchUserData(user.slack_id);
 
       return {
