@@ -45,7 +45,7 @@ export default async function fetchData() {
   // 6hr cache
   if (userCache.timestamp < Date.now() - 1000 * 60 * 60 * 6) {
     console.log("user cache expired");
-    userCache = { users: {}, timestamp: 0 };
+    userCache = { users: {}, timestamp: Date.now() };
   }
 
   console.log("cache miss");

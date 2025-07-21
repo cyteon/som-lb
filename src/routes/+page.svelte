@@ -34,6 +34,7 @@
             amount: string;
             created_at: string;
             id: string;
+            payable_type: string;
         }[];
         shells: number;
     } | null = null;
@@ -123,18 +124,19 @@
 {:else}
     <div class="flex flex-col items-center px-2">
         <h1 class="text-4xl md:text-6xl mt-16 brown">Shell Leaderboard</h1>
+        <div class="flex md:text-lg">
+            <a href="https://github.com/cyteon/som-lb" class="opacity-70 font-bold!">Source</a>
+            <p class="brown opacity-40 mx-1">|</p>
+            <a href="https://summer.hackclub.com" class="opacity-70 font-bold!">Summer of Making</a>
+            <p class="brown opacity-40 mx-1">|</p>
+            <p class="opacity-70 font-bold!">By <a href="https://cyteon.dev?utm_source=som-lb" class="font-bold!">Cyteon</a></p>
+        </div>
         <div class="flex flex-col md:flex-row items-center">
-            <p class="opacity-70">
-                Run
-                <code class="border rounded-sm py-0.5 px-1 bg text-sm">/som-watch-my-balance</code>
-                to opt in
-            </p>
-            <p class="brown opacity-40 mx-1 hidden md:block">|</p>
             <div class="flex">
                 <p class="opacity-70">
                     <span class="font-bold!">
                         {data.optedIn || 0}
-                    </span> opted-in
+                    </span> people found
                 </p>
                 <p class="brown opacity-40 mx-1">|</p>
                 <p class="opacity-70">
@@ -149,13 +151,6 @@
                     {/if}
                 </p>
             </div>
-        </div>
-        <div class="flex md:text-lg">
-            <a href="https://github.com/cyteon/som-lb" class="opacity-70 font-bold!">Source</a>
-            <p class="brown opacity-40 mx-1">|</p>
-            <a href="https://summer.hackclub.com" class="opacity-70 font-bold!">Summer of Making</a>
-            <p class="brown opacity-40 mx-1">|</p>
-            <p class="opacity-70 font-bold!">By <a href="https://cyteon.dev?utm_source=som-lb" class="font-bold!">Cyteon</a></p>
         </div>
 
 
@@ -313,6 +308,7 @@
                     <thead>
                         <tr>
                             <th class="text-left py-1 px-2 border-r">Amount</th>
+                            <th class="text-left py-1 px-2 border-r">Type</th>
                             <th class="text-left py-1 px-2">Time</th>
                         </tr>
                     </thead>
@@ -321,6 +317,19 @@
                             <tr>
                                 <td class={"px-2 border-r border-t " + (parseFloat(payout.amount) > 0 ? "text-green-700" : "text-red-700")}>
                                     {parseFloat(payout.amount) > 0 ? "+" : ""}{payout.amount}
+                                </td>
+                                <td class="border border-b-0 px-2">
+                                    {#if payout.payable_type === "User"}
+                                        User Modified
+                                    {:else if payout.payable_type === "ShopOrder"}
+                                        {#if parseFloat(payout.amount) < 0}
+                                            Shop Order
+                                        {:else}
+                                            Shop Refund
+                                        {/if}
+                                    {:else}
+                                        {payout.payable_type}
+                                    {/if}
                                 </td>
                                 <td class="border border-b-0 border-r-0 px-2">{generateTimeString(new Date(payout.created_at).getTime())}</td>
                             </tr>
