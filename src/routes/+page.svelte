@@ -14,6 +14,7 @@
                 payable_type: string;
             }[];
             shells: number;
+            total_shells?: number;
             image: string;
         }[];
         pages?: number;
@@ -27,9 +28,11 @@
 
     let hadSearchParam: boolean = false;
     let search: string = "";
+    let byNetWorth: boolean = false;
 
     let popupData: {
         slack_id: string;
+        username: string;
         payouts: {
             amount: string;
             created_at: string;
@@ -37,6 +40,7 @@
             payable_type: string;
         }[];
         shells: number;
+        total_shells?: number;
     } | null = null;
 
     let loading: boolean = true;
@@ -54,6 +58,7 @@
             }
 
             search = urlParams.get("search") || "";
+            byNetWorth = urlParams.get("byNetWorth") === "true";
 
             if (search.trim()) {
                 hadSearchParam = true;
@@ -65,7 +70,7 @@
 
     async function fetchData() {
         try {
-            let url = `/api/lb?page=${page}`;
+            let url = `/api/lb?page=${page}&byNetWorth=${byNetWorth}`;
 
             if (search.trim()) {
                 url = `/api/search?search=${encodeURIComponent(search)}&page=${page}`;
@@ -178,6 +183,27 @@
             </button>
         </div>
 
+        <div class="mt-2 bg border rounded-md p-2 flex space-x-2">
+            <button 
+                class={`px-4 py-1 rounded-md ${byNetWorth ? "border" : "bg-blue-400"}`}
+                on:click={async () => {
+                    byNetWorth = false;
+
+                    await fetchData();
+                    window.history.pushState({}, "", `?page=${page}&byNetWorth=${byNetWorth}&search=${encodeURIComponent(search)}`);
+                }}
+            >By Current Shells</button>
+            <button 
+                class={`px-4 py-1 rounded-md ${!byNetWorth ? "border" : "bg-blue-400"}`}
+                on:click={async () => {
+                    byNetWorth = true;
+
+                    await fetchData();
+                    window.history.pushState({}, "", `?page=${page}&byNetWorth=${byNetWorth}&search=${encodeURIComponent(search)}`);
+                }}
+            >By Net Worth</button>
+        </div>
+
         <div
             class="w-full md:w-1/2 mt-4 space-y-2" 
         >
@@ -249,7 +275,7 @@
                         }}>{user.username}</button>
 
                         <div class="ml-auto my-auto flex">
-                            <p class="text-2xl text-right">{user.shells.toFixed(0)}</p>
+                            <p class="text-2xl text-right">{byNetWorth ? user.total_shells?.toFixed(0) : user.shells.toFixed(0)}</p>
                             <img src="/shell.png" alt="shell" class="inline my-1.5 w-6 h-6 ml-2" />
                         </div>
                     </div>
