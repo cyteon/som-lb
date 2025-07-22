@@ -42,10 +42,12 @@ export default async function fetchData() {
     return cache;
   }
 
+  let doRefreshUserCache = false;
+
   // 6hr cache
   if (userCache.timestamp < Date.now() - 1000 * 60 * 60 * 6) {
     console.log("user cache expired");
-    userCache = { users: {}, timestamp: Date.now() };
+    doRefreshUserCache = true;
   }
 
   console.log("cache miss");
@@ -65,6 +67,7 @@ export default async function fetchData() {
     }
 
     users = await res.json();
+    console.log(`fetched ${users.length} users from explorpheus`);
   } catch (error) {
     console.error("Error fetching data:", error);
 
@@ -103,17 +106,23 @@ export default async function fetchData() {
   userCache.timestamp = Date.now();
   fs.writeFileSync("userCache.json", JSON.stringify(userCache, null, 2));
 
+  if (doRefreshUserCache) {
+    // put it here so the fetch requests arent before the required ones for this request in queue
+    // also not await so it returns immediately
+    refreshUserCache().catch(console.error);
+  }
+
   return data;
 }
 
-async function fetchUserData(slackId) {
+async function fetchUserData(slackId, useCache = true) {
   const cachedUser = userCache.users[slackId];
 
-  if (cachedUser) {
+  if (cachedUser && useCache) {
     return cachedUser;
+  } else if (useCache) {
+    console.log(`cache miss for user ${slackId}`); // only log cache miss if using cache
   }
-
-  console.log(`cache miss for user ${slackId}`);
 
   const res = await userInfoQueue.add(() =>
     slack.users.info({ user: slackId }),
@@ -129,4 +138,31 @@ async function fetchUserData(slackId) {
 
   userCache.users[slackId] = data;
   return data;
+}
+
+export async function refreshUserCache() {
+  console.log("refreshing user cache...");
+  console.time("refeshUserCache");
+
+  cache.users = await Promise.all(
+    cache.users.map(async (user) => {
+      if (!user.slack_id) {
+        return { ...user, username: "<unknown>", image: "https://ca.slack-edge.com/T0266FRGM-U015ZPLDZKQ-gf3696467c28-512" };
+      }
+
+      const userData = await fetchUserData(user.slack_id, false);
+
+      return {
+        ...user,
+        username: userData.username || user.slack_id,
+        image: userData.image,
+      };
+    }),
+  );
+
+  userCache.timestamp = Date.now();
+  fs.writeFileSync("userCache.json", JSON.stringify(userCache, null, 2));
+  
+  console.timeEnd("refeshUserCache");
+  console.log("user cache refreshed");
 }
