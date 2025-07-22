@@ -11,7 +11,7 @@
                 amount: string;
                 created_at: string;
                 id: string;
-                payable_type: string;
+                type: string;
             }[];
             shells: number;
             total_shells?: number;
@@ -37,7 +37,7 @@
             amount: string;
             created_at: string;
             id: string;
-            payable_type: string;
+            type: string;
         }[];
         shells: number;
         total_shells?: number;
@@ -345,16 +345,16 @@
                                     {parseFloat(payout.amount) > 0 ? "+" : ""}{payout.amount}
                                 </td>
                                 <td class="border border-b-0 px-2">
-                                    {#if payout.payable_type === "User"}
+                                    {#if payout.type === "User"}
                                         User Modified
-                                    {:else if payout.payable_type === "ShopOrder"}
+                                    {:else if payout.type === "ShopOrder"}
                                         {#if parseFloat(payout.amount) < 0}
                                             Shop Order
                                         {:else}
                                             Shop Refund
                                         {/if}
                                     {:else}
-                                        {payout.payable_type}
+                                        {payout.type}
                                     {/if}
                                 </td>
                                 <td class="border border-b-0 border-r-0 px-2">{generateTimeString(new Date(payout.created_at).getTime())}</td>
